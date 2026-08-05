@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --panel-soft: #f9faf5;
+            --text: #1e2432;
+            --muted: #687385;
+            --line: #dce2ea;
+            --accent: #2563eb;
+            --accent-strong: #1d4ed8;
+            --accent-soft: #e8f0ff;
+            --mint: #2a9d8f;
+            --rose: #d94f70;
+            --shadow: 0 20px 50px rgba(28, 37, 65, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 32%),
+                linear-gradient(315deg, rgba(42, 157, 143, 0.09), transparent 28%),
+                var(--bg);
+        }
+
+        button,
+        textarea {
+            font: inherit;
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 28px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: #ffffff;
+            background: linear-gradient(145deg, var(--accent), var(--mint));
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: clamp(1.45rem, 3vw, 2rem);
+            letter-spacing: 0;
+        }
+
+        .brand p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .status-pill {
+            min-height: 38px;
+            padding: 9px 13px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.14);
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+            gap: 20px;
+            align-items: stretch;
+            flex: 1;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid rgba(220, 226, 234, 0.86);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            min-height: 68px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.68);
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1rem;
+            letter-spacing: 0;
+        }
+
+        .panel-meta {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .text-button,
+        .primary-button {
+            min-height: 40px;
+            border: 0;
+            border-radius: 8px;
+            padding: 0 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 700;
+            transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, color 160ms ease;
+        }
+
+        .text-button {
+            color: var(--text);
+            background: #ffffff;
+            border: 1px solid var(--line);
+        }
+
+        .text-button:hover {
+            border-color: #b8c3d3;
+            transform: translateY(-1px);
+        }
+
+        .primary-button {
+            color: #ffffff;
+            background: var(--accent);
+            min-width: 148px;
+        }
+
+        .primary-button:hover {
+            background: var(--accent-strong);
+            transform: translateY(-1px);
+        }
+
+        .primary-button:disabled,
+        .text-button:disabled {
+            opacity: 0.62;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-wrap {
+            padding: 18px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 430px;
+            resize: vertical;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            outline: none;
+            padding: 18px;
+            background: #f8fafc;
+            color: var(--text);
+            line-height: 1.65;
+            box-shadow: inset 0 0 0 1px var(--line);
+        }
+
+        textarea:focus {
+            background: #ffffff;
+            box-shadow: inset 0 0 0 2px var(--accent);
+        }
+
+        .input-footer {
+            min-height: 48px;
+            padding-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .result-body {
+            min-height: 430px;
+            padding: 22px;
+            background: linear-gradient(180deg, #ffffff, var(--panel-soft));
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .summary-box {
+            flex: 1;
+            min-height: 260px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 18px;
+            line-height: 1.75;
+            color: #2d3544;
+            white-space: pre-wrap;
+        }
+
+        .summary-box.empty {
+            color: var(--muted);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .metric {
+            min-height: 78px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            background: #ffffff;
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .metric strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 1.12rem;
+        }
+
+        .message {
+            min-height: 22px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .message.error {
+            color: var(--rose);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 800ms linear infinite;
+            display: none;
+        }
+
+        .is-loading .spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .page {
+                width: min(100% - 22px, 640px);
+                padding: 18px 0;
+            }
+
+            .topbar,
+            .panel-header,
+            .input-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .status-pill {
+                white-space: normal;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            textarea,
+            .result-body {
+                min-height: 320px;
+            }
+
+            .toolbar {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .primary-button,
+            .text-button {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .brand {
+                align-items: flex-start;
+            }
+
+            .brand-mark {
+                flex: 0 0 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">TS</div>
+                <div>
+                    <h1>Text Summarizer</h1>
+                    <p>Hugging Face Transformer workspace</p>
+                </div>
+            </div>
+            <div class="status-pill">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="service-status">Model ready</span>
+            </div>
+        </header>
+
+        <section class="workspace" aria-label="Text summarization workspace">
+            <form class="panel" id="summarization-form">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Source Text</h2>
+                        <p class="panel-meta">Paste dialogue, notes, or long-form content.</p>
+                    </div>
+                    <div class="toolbar">
+                        <button class="text-button" type="button" id="sample-button">Sample</button>
+                        <button class="text-button" type="button" id="clear-button">Clear</button>
+                    </div>
+                </div>
+
+                <div class="input-wrap">
+                    <textarea id="dialogue-input" placeholder="Add text here..." required></textarea>
+                    <div class="input-footer">
+                        <span id="input-count">0 words</span>
+                        <button class="primary-button" type="submit" id="summarize-button">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span id="button-label">Summarize</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <section class="panel" aria-live="polite">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Summary</h2>
+                        <p class="panel-meta" id="summary-meta">Waiting for text</p>
+                    </div>
+                    <div class="toolbar">
+                        <button class="text-button" type="button" id="copy-button" disabled>Copy</button>
+                    </div>
+                </div>
+
+                <div class="result-body">
+                    <div class="summary-box empty" id="summary-text">Your summary will appear here.</div>
+                    <div class="metrics" aria-label="Summary metrics">
+                        <div class="metric">
+                            <span>Input</span>
+                            <strong id="metric-input">0</strong>
+                        </div>
+                        <div class="metric">
+                            <span>Summary</span>
+                            <strong id="metric-summary">0</strong>
+                        </div>
+                        <div class="metric">
+                            <span>Reduced</span>
+                            <strong id="metric-reduced">0%</strong>
+                        </div>
+                    </div>
+                    <div class="message" id="message"></div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById("summarization-form");
+        const dialogueInput = document.getElementById("dialogue-input");
+        const summaryText = document.getElementById("summary-text");
+        const summaryMeta = document.getElementById("summary-meta");
+        const submitButton = document.getElementById("summarize-button");
+        const buttonLabel = document.getElementById("button-label");
+        const clearButton = document.getElementById("clear-button");
+        const sampleButton = document.getElementById("sample-button");
+        const copyButton = document.getElementById("copy-button");
+        const message = document.getElementById("message");
+        const inputCount = document.getElementById("input-count");
+        const metricInput = document.getElementById("metric-input");
+        const metricSummary = document.getElementById("metric-summary");
+        const metricReduced = document.getElementById("metric-reduced");
+        const serviceStatus = document.getElementById("service-status");
+
+        const sampleText = `Alex: Are we still meeting the client on Friday morning?
+Priya: Yes, but the time changed from 10 AM to 11:30 AM.
+Alex: Got it. Should I update the slide deck tonight?
+Priya: Please update the budget slide and add the latest customer numbers.
+Alex: I will send the final version before lunch tomorrow.
+Priya: Perfect. I will review it and share it with the team.`;
+
+        function countWords(text) {
+            return text.trim() ? text.trim().split(/\s+/).length : 0;
+        }
+
+        function setLoading(isLoading) {
+            submitButton.disabled = isLoading;
+            submitButton.classList.toggle("is-loading", isLoading);
+            buttonLabel.textContent = isLoading ? "Summarizing" : "Summarize";
+            serviceStatus.textContent = isLoading ? "Model working" : "Model ready";
+        }
+
+        function updateInputStats() {
+            const words = countWords(dialogueInput.value);
+            inputCount.textContent = `${words} ${words === 1 ? "word" : "words"}`;
+            metricInput.textContent = words;
+        }
+
+        function updateSummary(summary) {
+            const inputWords = countWords(dialogueInput.value);
+            const summaryWords = countWords(summary);
+            const reduction = inputWords > 0 ? Math.max(0, Math.round((1 - summaryWords / inputWords) * 100)) : 0;
+
+            summaryText.textContent = summary || "Your summary will appear here.";
+            summaryText.classList.toggle("empty", !summary);
+            summaryMeta.textContent = summary ? "Generated just now" : "Waiting for text";
+            metricSummary.textContent = summaryWords;
+            metricReduced.textContent = `${reduction}%`;
+            copyButton.disabled = !summary;
+        }
+
+        dialogueInput.addEventListener("input", updateInputStats);
+
+        clearButton.addEventListener("click", () => {
+            dialogueInput.value = "";
+            message.textContent = "";
+            message.classList.remove("error");
+            updateInputStats();
+            updateSummary("");
+            dialogueInput.focus();
+        });
+
+        sampleButton.addEventListener("click", () => {
+            dialogueInput.value = sampleText;
+            message.textContent = "";
+            message.classList.remove("error");
+            updateInputStats();
+            dialogueInput.focus();
+        });
+
+        copyButton.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(summaryText.textContent.trim());
+            message.textContent = "Summary copied.";
+            message.classList.remove("error");
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const dialogue = dialogueInput.value.trim();
+            if (!dialogue) {
+                message.textContent = "Add text before summarizing.";
+                message.classList.add("error");
+                dialogueInput.focus();
+                return;
+            }
+
+            setLoading(true);
+            message.textContent = "";
+            message.classList.remove("error");
+            updateSummary("Generating summary...");
+
+            try {
+                const response = await fetch("/summarize/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ dialogue }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                updateSummary(data.summary || "No summary returned.");
+                message.textContent = "Summary generated successfully.";
+            } catch (error) {
+                updateSummary("");
+                message.textContent = `Error: ${error.message}`;
+                message.classList.add("error");
+                serviceStatus.textContent = "Needs attention";
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        updateInputStats();
+    </script>
+</body>
+</html>
