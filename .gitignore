@@ -1,0 +1,7 @@
+saved_summary_model/
+__pycache__/
+*.pyc
+samsum-train.csv
+samsum-validation.csv
+samsum-test.csv
+.env
