@@ -1,4 +1,5 @@
 import os
+
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from transformers import T5ForConditionalGeneration, T5Tokenizer
@@ -10,10 +11,9 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Text Summarizer App", description="Text Summarization using T5", version="1.0")
 
-# Loads from the Hugging Face Hub by default (set MODEL_PATH env var to override,
-# e.g. MODEL_PATH=./saved_summary_model to use a local copy instead)
+# Uses the published model by default. Set MODEL_PATH=./saved_summary_model
+# to run from the bundled local copy instead.
 MODEL_PATH = os.environ.get("MODEL_PATH", "karthik2004-tech/t5-dialogue-summarizer")
-
 model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
 tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH)
 
@@ -31,18 +31,15 @@ model.eval()
 PROJECT_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(PROJECT_DIR))
 
-
 class DialogueInput(BaseModel):
     dialogue: str
 
-
 def clean_data(text):
     text = re.sub(r"\r\n", " ", text)  # lines
-    text = re.sub(r"\s+", " ", text)   # spaces
+    text = re.sub(r"\s+", " ", text)  # spaces
     text = re.sub(r"<.*?>", " ", text)  # html tags <p> <h1>
     text = text.strip().lower()
     return text
-
 
 def summarize_dialogue(dialogue: str) -> str:
     dialogue = clean_data(dialogue)  # clean
@@ -77,7 +74,6 @@ def summarize_dialogue(dialogue: str) -> str:
 async def summarize(dialogue_input: DialogueInput):
     summary = summarize_dialogue(dialogue_input.dialogue)
     return {"summary": summary}
-
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
