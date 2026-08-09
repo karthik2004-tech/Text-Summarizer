@@ -1,3 +1,13 @@
+---
+title: Dialogue Text Summarizer
+emoji: 🧠
+colorFrom: purple
+colorTo: blue
+sdk: docker
+app_port: 7860
+suggested_hardware: cpu-basic
+---
+
 # 🧠 Text Summarizer — Dialogue Summarization with T5
 
 A fine-tuned **T5 (Text-to-Text Transfer Transformer)** model that summarizes multi-turn chat conversations, served through a **FastAPI** backend with a lightweight web UI.
