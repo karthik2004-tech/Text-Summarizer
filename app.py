@@ -2,7 +2,7 @@ import os
 
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import AutoTokenizer, T5ForConditionalGeneration
 import torch
 import re
 from pathlib import Path
@@ -11,11 +11,19 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Text Summarizer App", description="Text Summarization using T5", version="1.0")
 
-# Uses the published model by default. Set MODEL_PATH=./saved_summary_model
-# to run from the bundled local copy instead.
-MODEL_PATH = os.environ.get("MODEL_PATH", "karthik2004-tech/t5-dialogue-summarizer")
+# Prefer the bundled model so local development works without a connection.
+# If it is absent (as in the deployed repository), use the published model.
+# MODEL_PATH may point to another local directory or a Hugging Face model ID.
+PROJECT_DIR = Path(__file__).resolve().parent
+DEFAULT_MODEL_PATH = PROJECT_DIR / "saved_summary_model"
+MODEL_PATH = os.environ.get(
+    "MODEL_PATH",
+    str(DEFAULT_MODEL_PATH)
+    if DEFAULT_MODEL_PATH.is_dir()
+    else "karthik2004-tech/t5-dialogue-summarizer",
+)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
-tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=True)
 
 # device
 if torch.backends.mps.is_available():
@@ -28,7 +36,6 @@ else:
 model.to(device)
 model.eval()
 
-PROJECT_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(PROJECT_DIR))
 
 class DialogueInput(BaseModel):
