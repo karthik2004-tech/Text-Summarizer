@@ -160,13 +160,13 @@ health check.
    files out of Git; they are intentionally ignored because of their size.
    Upload the model folder to the Hugging Face model repository named by
    `MODEL_PATH` before deploying. This project's default is
-   `karthik2004-tech/t5-dialogue-summarizer`.
+   `Karthiktelukutla2004/text-summarizer`.
 2. In the [Render Dashboard](https://dashboard.render.com/), choose **New +**
    > **Blueprint**, connect GitHub, and select the repository.
 3. Review the proposed `text-summarizer` service and click **Apply**. Render
    reads the configuration from `render.yaml`.
 4. Wait for the first deployment to complete. The app downloads
-   `karthik2004-tech/t5-dialogue-summarizer` from Hugging Face on first start,
+   `Karthiktelukutla2004/text-summarizer` from Hugging Face on first start,
    which can make that first start slower.
 5. Open the generated `https://<service-name>.onrender.com` URL. Confirm
    `https://<service-name>.onrender.com/health` returns `{"status":"ok"}`.
@@ -178,7 +178,7 @@ For a manual Render setup, create a **Python Web Service** with:
 | Build command | `pip install --upgrade pip && pip install -r requirements.txt` |
 | Start command | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
 | Health check path | `/health` |
-| Environment variables | `PYTHON_VERSION=3.11.9`, `MODEL_PATH=karthik2004-tech/t5-dialogue-summarizer` |
+| Environment variables | `PYTHON_VERSION=3.11.9`, `MODEL_PATH=Karthiktelukutla2004/text-summarizer` |
 
 The Blueprint uses Render's free plan. It can spin down after inactivity, so
 the next request may take longer while the service wakes and loads the model.

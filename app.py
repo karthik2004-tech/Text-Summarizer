@@ -20,7 +20,7 @@ MODEL_PATH = os.environ.get(
     "MODEL_PATH",
     str(DEFAULT_MODEL_PATH)
     if DEFAULT_MODEL_PATH.is_dir()
-    else "karthik2004-tech/t5-dialogue-summarizer",
+    else "Karthiktelukutla2004/text-summarizer",
 )
 # Set HF_TOKEN in the host environment when MODEL_PATH is a private or gated
 # Hugging Face repository. Never put the token in source control.
