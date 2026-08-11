@@ -10,3 +10,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      # This model is downloaded from Hugging Face because the local model
+      # directory is intentionally excluded from the Git repository.
+      - key: MODEL_PATH
+        value: karthik2004-tech/t5-dialogue-summarizer

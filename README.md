@@ -145,10 +145,42 @@ curl -X POST "http://127.0.0.1:8000/summarize/" \
 - [ ] Evaluate with ROUGE-1 / ROUGE-2 / ROUGE-L metrics on the held-out test set
 - [ ] Test generalization on longer, multi-topic conversations
 - [ ] Experiment with `t5-base` for a quality/latency comparison
-- [ ] Containerize with Docker for deployment
+- [x] Add Docker and Render deployment configuration
 - [ ] Add batch summarization support to the API
 
 ---
+
+## Deploy on Render
+
+This repository includes [`render.yaml`](render.yaml), which creates a Render
+web service with the correct build command, start command, Python version, and
+health check.
+
+1. Push this project to GitHub. Keep `saved_summary_model/` and the SAMSum CSV
+   files out of Git; they are intentionally ignored because of their size.
+2. In the [Render Dashboard](https://dashboard.render.com/), choose **New +**
+   > **Blueprint**, connect GitHub, and select the repository.
+3. Review the proposed `text-summarizer` service and click **Apply**. Render
+   reads the configuration from `render.yaml`.
+4. Wait for the first deployment to complete. The app downloads
+   `karthik2004-tech/t5-dialogue-summarizer` from Hugging Face on first start,
+   which can make that first start slower.
+5. Open the generated `https://<service-name>.onrender.com` URL. Confirm
+   `https://<service-name>.onrender.com/health` returns `{"status":"ok"}`.
+
+For a manual Render setup, create a **Python Web Service** with:
+
+| Setting | Value |
+|---|---|
+| Build command | `pip install --upgrade pip && pip install -r requirements.txt` |
+| Start command | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
+| Health check path | `/health` |
+| Environment variables | `PYTHON_VERSION=3.11.9`, `MODEL_PATH=karthik2004-tech/t5-dialogue-summarizer` |
+
+The Blueprint uses Render's free plan. It can spin down after inactivity, so
+the next request may take longer while the service wakes and loads the model.
+Use a paid instance (and optionally a persistent disk for the model cache) for
+steadier production response times.
 
 ## 🛠️ Tech Stack
 
