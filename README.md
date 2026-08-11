@@ -158,6 +158,9 @@ health check.
 
 1. Push this project to GitHub. Keep `saved_summary_model/` and the SAMSum CSV
    files out of Git; they are intentionally ignored because of their size.
+   Upload the model folder to the Hugging Face model repository named by
+   `MODEL_PATH` before deploying. This project's default is
+   `karthik2004-tech/t5-dialogue-summarizer`.
 2. In the [Render Dashboard](https://dashboard.render.com/), choose **New +**
    > **Blueprint**, connect GitHub, and select the repository.
 3. Review the proposed `text-summarizer` service and click **Apply**. Render
@@ -181,6 +184,13 @@ The Blueprint uses Render's free plan. It can spin down after inactivity, so
 the next request may take longer while the service wakes and loads the model.
 Use a paid instance (and optionally a persistent disk for the model cache) for
 steadier production response times.
+
+### Private Hugging Face model
+
+If the model repository is private, create a Hugging Face access token with
+**Read** permission. In Render, open the service's **Environment** page, add an
+environment variable named `HF_TOKEN`, paste the token as its value, save it,
+and redeploy. Do not add this token to `render.yaml`, GitHub, or source code.
 
 ## 🛠️ Tech Stack
 

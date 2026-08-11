@@ -22,8 +22,11 @@ MODEL_PATH = os.environ.get(
     if DEFAULT_MODEL_PATH.is_dir()
     else "karthik2004-tech/t5-dialogue-summarizer",
 )
-model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=True)
+# Set HF_TOKEN in the host environment when MODEL_PATH is a private or gated
+# Hugging Face repository. Never put the token in source control.
+HF_TOKEN = os.environ.get("HF_TOKEN")
+model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH, token=HF_TOKEN)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=True, token=HF_TOKEN)
 
 # device
 if torch.backends.mps.is_available():
